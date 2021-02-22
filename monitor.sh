@@ -27,17 +27,17 @@
 #VERSION NUMBER
 export version=0.2.200
 
-if [ -z ${NO_COLOR} -o -z ${NOCOLOR} ] ; then
+if [ -z "${NO_COLOR}" -o -z "${NOCOLOR}" ] ; then
 	#COLOR OUTPUT FOR RICH OUTPUT
-	ORANGE=$'\e[1;33m'
+	# ORANGE=$'\e[1;33m'
 	RED=$'\e[1;31m'
 	NC=$'\e[0m'
 	GREEN=$'\e[1;32m'
 	PURPLE=$'\e[1;35m'
 	BLUE=$'\e[1;34m'
 	CYAN=$'\e[1;36m'
-	YELLOW=$'\e[01;33m'
-	REPEAT=$'\e[1A'
+	# YELLOW=$'\e[01;33m'
+	# REPEAT=$'\e[1A'
 else
 	:
 fi
@@ -61,15 +61,23 @@ export RUNTIME_ARGS=("$@")
 # SOURCES
 # ----------------------------------------------------------------------------------------
 #SOURCE SETUP AND ARGV FILES
-source './support/argv'
-source './support/init'
+script_path=$(dirname "${0}")
+# shellcheck disable=SC1090
+source "${script_path}/support/argv"
+# shellcheck disable=SC1090
+source "${script_path}/support/init"
 
 #SOURCE FUNCTIONS
-source './support/mqtt'
-source './support/log'
-source './support/data'
-source './support/btle'
-source './support/time'
+# shellcheck disable=SC1090
+source "${script_path}/support/mqtt"
+# shellcheck disable=SC1090
+source "${script_path}/support/log"
+# shellcheck disable=SC1090
+source "${script_path}/support/data"
+# shellcheck disable=SC1090
+source "${script_path}/support/btle"
+# shellcheck disable=SC1090
+source "${script_path}/support/time"
 # ----------------------------------------------------------------------------------------
 # CLEANUP ROUTINE 
 # ----------------------------------------------------------------------------------------
@@ -149,7 +157,7 @@ first_arrive_scan=true
 #LOAD PUBLIC ADDRESSES TO SCAN INTO ARRAY, IGNORING COMMENTS
 mapfile -t known_static_beacons < <(sed 's/#.\{0,\}//gi' < "$BEAC_CONFIG" | awk '{print $1}' | grep -oiE "([0-9a-f]{2}:){5}[0-9a-f]{2}" )
 mapfile -t known_static_addresses < <(sed 's/#.\{0,\}//gi' < "$PUB_CONFIG" | awk '{print $1}' | grep -oiE "([0-9a-f]{2}:){5}[0-9a-f]{2}" )
-mapfile -t address_blacklist < <(sed 's/#.\{0,\}//gi' < "$ADDRESS_BLACKLIST" | awk '{print $1}' | grep -oiE "([0-9a-f]{2}:){5}[0-9a-f]{2}" )
+mapfile -t address_blacklist < <(sed 's/#.\{0,\}//gi' < "${address}_BLACKLIST" | awk '{print $1}' | grep -oiE "([0-9a-f]{2}:){5}[0-9a-f]{2}" )
 
 #ASSEMBLE COMMENT-CLEANED BLACKLIST INTO BLACKLIST ARRAY
 for addr in "${address_blacklist[@]^^}"; do 
@@ -756,7 +764,7 @@ determine_name () {
 	address="$1"
 
 	#RETURN ADDRESS
-	[ -z "$address" ] && return 0
+	[ -z "${address}" ] && return 0
 
 	#ALTERNATIVE ADDRESS 
 	local alternate_address
@@ -765,7 +773,7 @@ determine_name () {
 	
 	#IF IS NEW AND IS PUBLIC, SHOULD CHECK FOR NAME
 	local expected_name
-	expected_name="${known_public_device_name[$address]}"
+	expected_name="${known_public_device_name[${address}]}"
 
 	#ALTERNATE NAME? 
 	[ -z "$expected_name" ]	&& expected_name="${known_public_device_name[$alternate_address]}"
@@ -774,7 +782,7 @@ determine_name () {
 	if [ -z "$expected_name" ]; then 
 
 		#CHECK CACHE
-		expected_name=$(grep "$address" < "$base_directory/.public_name_cache" | awk -F "\t" '{print $2}')
+		expected_name=$(grep "${address}" < "${base_directory}/.public_name_cache" | awk -F "\t" '{print $2}')
 
 		#IF CACHE DOES NOT EXIST, TRY TO SCAN
 		if [ -z "$expected_name" ]; then 
@@ -786,25 +794,25 @@ determine_name () {
 		 	if [ "$scan_active" == false ] ; then 
 
 				#FIND NAME OF THIS DEVICE
-				expected_name=$(hcitool -i "$PREF_HCI_DEVICE" name "$address" 2>/dev/null)
+				expected_name=$(hcitool -i "$PREF_HCI_DEVICE" name "${address}" 2>/dev/null)
 
 				#IS THE EXPECTED NAME BLANK? 
 				if [ -n "$expected_name" ]; then 
 
 					#ADD TO SESSION ARRAY
-					known_public_device_name[$address]="$expected_name"
+					known_public_device_name[${address}]="$expected_name"
 
 					#ADD TO CACHE
-					echo "$address	$expected_name" >> .public_name_cache
+					echo "${address}	$expected_name" >> .public_name_cache
 				else
 					#ADD TO CACHE TO PREVENT RE-SCANNING
-					echo "$address	Undeterminable" >> .public_name_cache
+					echo "${address}	Undeterminable" >> .public_name_cache
 
 				fi 
 			fi 
 		else
 			#WE HAVE A CACHED NAME, ADD IT BACK TO THE PUBLIC DEVICE ARRAY 
-			known_public_device_name[$address]="$expected_name"
+			known_public_device_name[${address}]="$expected_name"
 		fi
 	fi 
 
