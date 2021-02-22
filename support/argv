@@ -52,6 +52,7 @@ GNU General Public License
 usage:
 
 	monitor -h 	show usage information
+	monitor -i 	install service if not installed
 	monitor -R 	redact private information from logs
 	monitor -S 	silent operation (no logging)
 	monitor -c addr	create connection to bluetooth device
@@ -114,8 +115,11 @@ PREF_FILTER_DEBUG_LOGGING=false
 PREF_MQTT_SINGLE_TOPIC_MODE=false
 PREF_PERIODIC_MODE=false
 
-while getopts "h?vfFbut:EgSRCmrsVadxD:c:" opt; do
+while getopts "h?ivfFbut:EgSRCmrsVadxD:c:" opt; do
 	case "$opt" in
+		i)
+			should_install=y
+			;;
 		h|\?)
 			show_help_text
 			exit 0

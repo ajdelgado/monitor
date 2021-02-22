@@ -61,7 +61,7 @@ export RUNTIME_ARGS=("$@")
 # SOURCES
 # ----------------------------------------------------------------------------------------
 #SOURCE SETUP AND ARGV FILES
-script_path=$(dirname "${0}")
+script_path=$(dirname "$(readlink -f "$0")")
 # shellcheck disable=SC1090
 source "${script_path}/support/argv"
 # shellcheck disable=SC1090
